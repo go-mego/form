@@ -67,19 +67,6 @@ func main() {
 }
 ```
 
-如果一個欄位是必要的，可以考慮透過 `form.MustGet` 來在沒有該欄位或是欄位為空白字串時自動產生 `panic` 阻斷請求。這種情況需要配合 Mego 的 Recovery 中介軟體以避免單次 `panic` 造成整個伺服器終止。
-
-```go
-func main() {
-	m := mego.New()
-	m.POST("/", file.New(), func(f *file.Store) {
-		// 透過 `MustGet` 可以自動中斷必要欄位但為空白的請求。
-		fmt.Println(f.MustGet("username"))
-	})
-	m.Run()
-}
-```
-
 ## 取得欄位切片
 
 `form.GetMulti` 能夠以字串切片的方式取得表單中的同個多重欄位（亦即重複欄位），切片的長度取決於表單中有多少筆重複欄位。
@@ -97,4 +84,54 @@ func main() {
 
 ## 映射表單
 
+`form.Bind` 可以將表單資料映射至本地的建構體。當無法映射至建構體的時候會離開請求，並且以 `text/plain` 回傳一個 HTTP 400 錯誤狀態碼。
+
+```go
+type User struct {
+	Username string
+	Password string
+}
+
+func main() {
+	m := mego.New()
+	m.POST("/", file.New(), func(f *file.Store) {
+		var u User
+		// 透過 `Bind` 能夠將接收到的表單資料映射至本地的建構體變數。
+		err := f.Bind(&u)
+		if err != nil {
+			// ...
+		}
+		fmt.Println(u.Username)
+	})
+	m.Run()
+}
+```
+
+映射時會忽略欄位的分隔符號（`-`、`_`）與大小寫，這讓你不需要額外處理名稱不同的問題。
+
+```
+createdAt       -> CreatedAt
+user-id         -> UserID
+favorite_photos -> FavoritePhotos
+```
+
 ### 自訂欄位
+
+有些時候請求的欄位可能與本地建構體不符，這時可以在建構體中使用 `form` 標籤來標明該建構體欄位對應請求表單中的哪個欄位。
+
+```go
+type User struct {
+	Username  string `form:"id"`
+	CreatedAt string `form:"registration_date"`
+}
+
+func main() {
+	m := mego.New()
+	m.POST("/", file.New(), func(f *file.Store) {
+		var u User
+        f.Bind(&u)
+        // ...
+	})
+	m.Run()
+}
+```
