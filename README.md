@@ -60,7 +60,7 @@ func main() {
 func main() {
 	m := mego.New()
 	m.POST("/", form.New(), func(f *form.Form) {
-        // 輸出表單欄位中 `username` 的資料。
+		// 輸出表單欄位中 `username` 的資料。
 		fmt.Println(f.Get("username"))
 	})
 	m.Run()
@@ -129,8 +129,8 @@ func main() {
 	m := mego.New()
 	m.POST("/", file.New(), func(f *file.Store) {
 		var u User
-        f.Bind(&u)
-        // ...
+		f.Bind(&u)
+		// ...
 	})
 	m.Run()
 }
