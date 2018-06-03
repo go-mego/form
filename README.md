@@ -74,7 +74,7 @@ func main() {
 ```go
 func main() {
 	m := mego.New()
-	m.POST("/", file.New(), func(f *file.Store) {
+	m.POST("/", form.New(), func(f *form.Form) {
 		// 透過 `GetMulti` 能以字串切片的方式來取得表單中的重複欄位。
 		fmt.Println(f.GetMulti("photos"))
 	})
@@ -94,7 +94,7 @@ type User struct {
 
 func main() {
 	m := mego.New()
-	m.POST("/", file.New(), func(f *file.Store) {
+	m.POST("/", form.New(), func(f *form.Form) {
 		var u User
 		// 透過 `Bind` 能夠將接收到的表單資料映射至本地的建構體變數。
 		err := f.Bind(&u)
@@ -115,6 +115,28 @@ user-id         -> UserID
 favorite_photos -> FavoritePhotos
 ```
 
+### 應該映射
+
+如果你希望映射的本質不是強迫的，那麼就可以透過 `form.ShouldBind` 來替代 `form.Bind`，這會在映射失敗的時候不做任何處理（亦即：不會離開請求、不會回傳錯誤狀態碼）。
+
+```go
+// ...
+
+func main() {
+	m := mego.New()
+	m.POST("/", form.New(), func(f *form.Form) {
+		var u User
+		// 透過 `ShouldBind` 來非強迫性地映射請求表單至本地建構體。
+		err := f.ShouldBind(&u)
+		if err != nil {
+			// ...
+		}
+		fmt.Println(u.Username)
+	})
+	m.Run()
+}
+```
+
 ### 自訂欄位
 
 有些時候請求的欄位可能與本地建構體不符，這時可以在建構體中使用 `form` 標籤來標明該建構體欄位對應請求表單中的哪個欄位。
@@ -127,7 +149,7 @@ type User struct {
 
 func main() {
 	m := mego.New()
-	m.POST("/", file.New(), func(f *file.Store) {
+	m.POST("/", form.New(), func(f *form.Form) {
 		var u User
 		f.Bind(&u)
 		// ...
