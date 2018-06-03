@@ -9,6 +9,7 @@ Form 套件用以從 `application/x-www-form-urlencoded` 或 `multipart/form-dat
     * [取得欄位](#取得欄位)
     * [取得欄位切片](#取得欄位切片)
     * [映射表單](#映射表單)
+        * [應該映射](#應該映射)
         * [自訂欄位](#自訂欄位)
 
 # 安裝方式
